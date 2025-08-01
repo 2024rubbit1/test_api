@@ -58,7 +58,5 @@ git merge your-feature  # 合并你的修改
 git status              # 查看冲突文件
 # 如果你们俩都改了同一行代码...
 CONFLICT (content): Merge conflict in hello.py
-特殊合并
-git merge --no-ff your-feature  # 强制保留合并记录
-11
+特殊合并gggggg
 
