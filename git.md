@@ -1,18 +1,6 @@
-1.安装git
-2.验证是否安装成功
-git --version
-3.配置git
-git config --global user.name "yourname"
-git config --global user.email "你的GitHub注册邮箱"
-4.检查配置是否成功
-git config --list | findstr "user"
-5.创建一个本地仓库
-mkdir myproject
-cd myproject
-touch README.md
-6.初始化仓库
 git init  # 会在当前目录生成.git隐藏文件夹
 ls -la    # 查看是否生成.git目录（Mac/Linux）
+<<<<<<< HEAD
 dir /a    # Windows查看隐藏目录
 7.创建.ignore文件
 touch .gitignore
@@ -58,5 +46,9 @@ git merge your-feature  # 合并你的修改
 git status              # 查看冲突文件
 # 如果你们俩都改了同一行代码...
 CONFLICT (content): Merge conflict in hello.py
-特殊合并gggggg
+特殊合并
+git merge --no-ff your-feature  # 强制保留合并记录
 
+=======
+dir /a    # Windows查看隐藏目录
+>>>>>>> parent of 13bcbf6 (增加回文数)
