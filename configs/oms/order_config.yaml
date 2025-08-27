@@ -1,0 +1,127 @@
+# 订单自动化测试配置
+# 版本: 1.0
+
+# 基础订单模板 - 固定字段
+order_template:
+  saleChannelCode: EBAY
+  isRegistered: 1
+  isInsured: 0  # 是否保价 0-否 1-是
+  insuranceAmount: 2  # 保险金额
+  isConfirm: 1
+  consigneeCountryCode: GB
+  consigneeCity: Ablis
+  thirdType: "1"  # 1-FBA订单 2-FBC订单 4-自提订单 5-直发订单
+  consigneeEmail: test@163.com
+  consigneeName: test
+  consigneePostcode: UK11 1
+  consigneeStreetOne: 宝安大道
+  consigneeTel: 33649383330
+  saleTime: "2024-01-01"
+  referenceNo: "ref_001"
+
+# 订单类型配置
+order_types:
+  standard:  # 标准订单 (不传thirdType)
+    description: "标准订单"
+    thirdType: null  # 不传此字段
+
+  fba:  # FBA转仓订单
+    description: "FBA转仓订单"
+    thirdType: "1"
+    # FBA特定配置
+    warehouseCode:
+      test: "FBA_SZTEST"
+      staging: "FBA_USSTAGE"
+      production: "FBA_SZPROD"
+
+  self_pickup:  # 自提订单
+    description: "自提订单"
+    thirdType: "4"
+    # 自提订单特定配置
+    logisticsServiceCode:
+      test: "SELF_PICKUP"
+      staging: "SELF_PICKUP"
+      production: "SELF_PICKUP"
+
+  fbc:  # FBC订单
+    description: "FBC订单"
+    thirdType: "2"
+
+  direct_ship:  # 直发订单
+    description: "直发订单"
+    thirdType: "5"
+# 环境相关配置
+environments:
+  test:  # 测试环境
+    warehouseCode: SZTEST
+    logisticsServiceCode: JD-1DD
+    sku_pool:  # 测试环境SKU
+      normal: ["TEST-0302-001", "Test-02-04098", "TEST-PICK-00002"]
+      sn: ["TEST_FRAGILE_001"]
+      bulk: ["TEST_BULK_001"]
+
+  production:  # 生产环境
+    warehouseCode: SZPROD
+    logisticsServiceCode: UPS-NDD
+    sku_pool:
+      normal: ["PROD_SKU_001", "PROD_SKU_002", "PROD_SKU_003"]
+      fragile: ["SKU20250515001", "SKU20250516001"]
+      bulk: ["PROD_BULK_001"]
+
+# 测试场景配置
+test_scenarios:
+  single_normal:  # 单普通商品
+    description: "单SKU正常订单测试"
+    sku_config:
+      category: normal
+      count: 1
+      quantity: 1
+
+  multi_normal:  # 多普通商品
+    description: "多SKU正常订单测试"
+    sku_config:
+      category: normal
+      count: 3
+      quantity: 2
+
+  single_sn:  # 单SN订单
+    description: "单SN订单测试"
+    sku_config:
+      category: sn
+      count: 1
+      quantity: 1
+
+  multi_sn: # 单SN订单
+    description: "多SN订单测试"
+    sku_config:
+      category: sn
+      count: 2
+      quantity: 2
+
+  bulk_order:  # 大批量订单
+    description: "大批量订单测试"
+    sku_config:
+      category: bulk
+      count: 1
+      quantity: 50
+
+  mixed_order:  # 混合订单
+    description: "混合商品类型订单测试"
+    items:
+      - category: normal
+        count: 2
+        quantity: 1
+      - category: sn
+        count: 1
+        quantity: 2
+
+# 可选字段配置（根据需要启用）
+optional_fields:
+  labelUrl:  # 标签URL模板
+    test: "http://test-label.com/{order_no}.pdf"
+    staging: "http://stage-label.com/{order_no}.pdf"
+    production: "http://prod-label.com/{order_no}.pdf"
+
+  returnLogisticsFlag: 1
+  returnLogisticsServiceCode: "XOD"
+  trackNumber: "TRACK_{order_no}"

@@ -1,0 +1,6 @@
+# test_env.yaml
+warehouse_code: "SZTEST"
+logistics_service_code: "JD-1DD"
+skus:
+  - "TEST-IPING0020"
+  - "NEW-BLACK-YK-LY-2001"

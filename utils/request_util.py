@@ -3,8 +3,8 @@ import requests
 
 
 class RequestUtil:
-    def __init__(self, base_url=None):
-        self.session = requests.Session()
+    def __init__(self, base_url=None, session=None):
+        self.session = session if session else requests.Session()  # 允许外部传入 session
         self.base_url = base_url
 
     def get(self, url, params=None, headers=None, **kwargs):

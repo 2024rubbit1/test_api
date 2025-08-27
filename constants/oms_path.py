@@ -1,0 +1,16 @@
+COMMON_ORDER_CREATE = "/v1/order/create"  # 一件代发订单创建
+COMMON_ORDER_SEARCH = "/v1/order/search"  # 一件代发订单查询
+COMMON_ORDER_DETAIL = "/v1/order/detail"  # 一件代发订单详情查询
+DIRECT_ORDER_CREATE = "/v1/order/createDirect"  # 一件代发订单创建
+COMMON_ORDER_SKU = "/v1/order/sku"  # 一件代发订单sku查询
+COMMON_ORDER_SKU_DETAIL = "/v1/order/sku/detail"  # 一件代发订单sku详情查询
+COMMON_ORDER_SEARCH_SKU_DETAIL_BY_SKU = "/v1/order/sku/detail/bySku"  # 一件代发订单sku详情查询
+SEARCH_INVENTORY_BY_LOCATION = "/v1/inventory/locationInventory/pageList"  # 库位查询
+CREATE_INBOUND = "/v1/warehousingEntry/create"  # 入库单创建
+SEARCH_INBOUND = "/v1/warehousingEntry/search"  # 入库单查询
+CONFIRM_INBOUND = "/v1/warehousingEntry/confirm"  # 入库单确认
+CANCEL_INBOUND = "/v1/warehousingEntry/cancelStatus"  # 入库单取消
+SEARCH_INBOUND_LIST = "/v1/warehousingEntry/list"  # 查询入库单列表
+SEARCH_TRACK = "/v1/order/tracks/"  # 查询订单物流轨迹
+RETURN_ORDER_CREATE = "/v1/return/order/create"  # 退货订单创建
+QUERY_INVENTORY = "/v1/inventory/pageList"  # 查询商品库存

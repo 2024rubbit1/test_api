@@ -1,0 +1,22 @@
+{
+    "saleChannelCode": "EBAY",
+    "isRegistered": 1,
+    "isInsured": 0,
+    "insuranceAmount": 2,
+    "isConfirm": 1,
+    "consigneeCountryCode": "GB",
+    "consigneeCity": "Ablis",
+    "thirdType": "1",
+    "consigneeEmail": "test@163.com",
+    "consigneeName": "test",
+    "consigneePostcode": "UK11 1",
+    "consigneeStreetOne": "宝安大道",
+    "consigneeTel": 33649383330,
+    "saleTime": "2024-01-01",
+    "warehouseCode": "",  #
+  //留空，动态填充
+    "logisticsServiceCode": "None",
+    "orderNo": "",  # 留空，动态填充
+    "referenceNo": "1",
+    "details": None  # 动态填充
+}
