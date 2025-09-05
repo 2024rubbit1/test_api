@@ -19,79 +19,134 @@ class OrderDataFactory:
         with open(config_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
 
-    def generate_order_no(self, env: str, prefix: str = "ORDER") -> str:
+    def generate_order_no(self, env: str, order_type: str = "standard") -> str:
         """生成唯一订单号"""
         self.order_counter += 1
         timestamp = int(uuid.uuid1().time)
-        return f"{prefix}_{env}_{timestamp}_{self.order_counter:06d}"
+        type_prefix = order_type.upper() if order_type != "standard" else "STD"
+        return f"{type_prefix}_{env}_{timestamp}_{self.order_counter:06d}"
 
-    def get_skus_for_scenario(self, env: str, scenario: str) -> List[Dict]:
-        """根据场景配置获取SKU列表"""
-        scenario_config = self.config['test_scenarios'][scenario]
+    def get_environment_value(self, env: str, field: str, key: str) -> str:
+        """获取环境特定的值，如果不存在映射则返回原值"""
         env_config = self.config['environments'][env]
+        mapping = env_config.get(f"{field}_mapping", {})
+        return mapping.get(key, key)
 
-        sku_details = []
+    def determine_order_type(self, logistics_code: str, sku_category: str) -> str:
+        """根据物流和SKU类别确定订单类型"""
+        logistics_config = self.config['logistics_services'].get(logistics_code, {})
 
-        if 'sku_config' in scenario_config:
+        # 如果物流是自提服务，强制为自提订单（thirdType=4）
+        if logistics_code == "SELF_PICKUP":
+            return "self_pickup"
+
+        # 如果SKU类别是fba，确定为FBA订单（thirdType=1）
+        if sku_category == "fba":
+            return "fba"
+
+        # 默认标准订单（不传thirdType）
+        return "standard"
+
+    def get_warehouse_code(self, env: str, base_warehouse: str, order_type: str, logistics_code: str) -> str:
+        """获取最终的仓库代码"""
+        order_type_config = self.config['order_types'].get(order_type, {})
+        logistics_config = self.config['logistics_services'].get(logistics_code, {})
+
+        # 处理仓库后缀
+        warehouse = base_warehouse
+
+        # 物流强制配置优先
+        if logistics_config.get('force_warehouse_suffix'):
+            warehouse += logistics_config['force_warehouse_suffix']
+        elif order_type_config.get('warehouse_suffix'):
+            warehouse += order_type_config['warehouse_suffix']
+
+        # 获取环境特定的映射值
+        return self.get_environment_value(env, 'warehouse', warehouse)
+
+    def get_logistics_code(self, env: str, logistics_config: str) -> str:
+        """获取最终的物流代码"""
+        if logistics_config == "default":
+            logistics = self.config['environments'][env]['base_logistics']
+        else:
+            logistics = logistics_config
+
+        # 获取环境特定的映射值
+        return self.get_environment_value(env, 'logistics', logistics)
+
+    def get_skus(self, env: str, scenario_config: Dict) -> List[Dict]:
+        """获取SKU详情"""
+        env_config = self.config['environments'][env]
+        details = []
+
+        if 'sku_mix' in scenario_config:
+            # 混合SKU配置
+            for item in scenario_config['sku_mix']:
+                sku_pool = env_config['sku_pool'][item['category']]
+                selected_skus = random.sample(sku_pool, min(item['count'], len(sku_pool)))
+                for sku in selected_skus:
+                    details.append({'sku': sku, 'qty': item['quantity']})
+        else:
             # 单一SKU配置
-            config = scenario_config['sku_config']
-            sku_pool = env_config['sku_pool'][config['category']]
-            selected_skus = random.sample(sku_pool, min(config['count'], len(sku_pool)))
+            sku_category = scenario_config['sku_category']
+            sku_count = scenario_config.get('sku_count', 1)
+            quantity = scenario_config.get('quantity', 1)
+
+            sku_pool = env_config['sku_pool'][sku_category]
+            selected_skus = random.sample(sku_pool, min(sku_count, len(sku_pool)))
 
             for sku in selected_skus:
-                sku_details.append({
-                    'sku': sku,
-                    'qty': config['quantity']
-                })
+                details.append({'sku': sku, 'qty': quantity})
 
-        elif 'items' in scenario_config:
-            # 多物品配置
-            for item_config in scenario_config['items']:
-                sku_pool = env_config['sku_pool'][item_config['category']]
-                selected_skus = random.sample(sku_pool, min(item_config['count'], len(sku_pool)))
-
-                for sku in selected_skus:
-                    sku_details.append({
-                        'sku': sku,
-                        'qty': item_config['quantity']
-                    })
-
-        return sku_details
+        return details
 
     def create_order(
             self,
             env: str = "test",
-            scenario: str = "single_normal",
+            scenario: str = "standard_order",
             custom_order_no: Optional[str] = None,
             include_optional: bool = False,
             **overrides
     ) -> Dict:
-        """
-        创建订单数据
-
-        Args:
-            env: 环境类型 (test/staging/production)
-            scenario: 测试场景
-            custom_order_no: 自定义订单号
-            include_optional: 是否包含可选字段
-            **overrides: 覆盖字段
-
-        Returns:
-            订单数据字典
-        """
-        # 生成订单号
-        order_no = custom_order_no or self.generate_order_no(env)
-
-        # 获取环境配置
+        """创建订单数据"""
+        # 获取场景配置
+        scenario_config = self.config['test_scenarios'][scenario]
         env_config = self.config['environments'][env]
 
+        # 生成订单号
+        order_no = custom_order_no or self.generate_order_no(env, scenario_config['order_type'])
+
+        # 获取物流代码
+        logistics_code = self.get_logistics_code(env, scenario_config['logistics'])
+
+        # 确定订单类型（考虑物流的影响）
+        final_order_type = self.determine_order_type(
+            logistics_code,
+            scenario_config.get('sku_category', 'standard')
+        )
+
+        # 获取仓库代码
+        warehouse_config = scenario_config['warehouse']
+        base_warehouse = env_config['base_warehouse'] if warehouse_config == "default" else warehouse_config
+        warehouse_code = self.get_warehouse_code(env, base_warehouse, final_order_type, logistics_code)
+
+        # 获取SKU详情
+        details = self.get_skus(env, scenario_config)
+
         # 构建基础订单数据
-        order_data = copy.deepcopy(self.config['order_template'])
+        order_data = copy.deepcopy(self.config['base_order_template'])
+
+        # 添加订单类型相关字段
+        order_type_config = self.config['order_types'][final_order_type]
+        if order_type_config['thirdType'] is not None:
+            order_data['thirdType'] = order_type_config['thirdType']
+
+        # 添加动态字段
         order_data.update({
-            'warehouseCode': env_config['warehouseCode'],
-            'logisticsServiceCode': env_config['logisticsServiceCode'],
+            'warehouseCode': warehouse_code,
+            'logisticsServiceCode': logistics_code,
             'orderNo': order_no,
-            'details': self.get_skus_for_scenario(env, scenario)
+            'details': details
         })
 
         # 添加可选字段
@@ -99,12 +154,9 @@ class OrderDataFactory:
             optional_data = {}
             for key, value in self.config['optional_fields'].items():
                 if isinstance(value, dict) and env in value:
-                    # 环境特定的模板字段
                     optional_data[key] = value[env].format(order_no=order_no)
                 else:
-                    # 固定值字段
                     optional_data[key] = value
-
             order_data.update(optional_data)
 
         # 应用覆盖字段
@@ -113,30 +165,20 @@ class OrderDataFactory:
 
         return order_data
 
-    def create_multiple_orders(
-            self,
-            env: str = "test",
-            scenarios: List[str] = None,
-            count_per_scenario: int = 1,
-            **kwargs
-    ) -> List[Dict]:
-        """创建多个订单"""
-        if scenarios is None:
-            scenarios = list(self.config['test_scenarios'].keys())
+    def create_test_suite(self, env: str = "test") -> List[Dict]:
+        """创建完整的测试套件"""
+        test_suite = []
 
-        orders = []
-        for scenario in scenarios:
-            for _ in range(count_per_scenario):
-                orders.append(self.create_order(env, scenario, **kwargs))
+        for scenario in self.config['test_scenarios']:
+            order = self.create_order(env, scenario)
+            order['test_scenario'] = scenario
+            order['test_description'] = self.config['test_scenarios'][scenario]['description']
+            test_suite.append(order)
 
-        return orders
+        return test_suite
 
 if __name__ == "__main__":
-    factory = OrderDataFactory()
-    orders = factory.create_multiple_orders(
-        env="test",
-        scenarios=["single_normal"],
-        count_per_scenario=2
-    )
-    for order in orders:
+    order_factory = OrderDataFactory()
+    test_suite = order_factory.create_test_suite()
+    for order in test_suite:
         print(order)

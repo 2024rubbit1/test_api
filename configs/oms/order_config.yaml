@@ -2,15 +2,14 @@
 # 版本: 1.0
 
 # 基础订单模板 - 固定字段
-order_template:
+base_order_template:
   saleChannelCode: EBAY
   isRegistered: 1
-  isInsured: 0  # 是否保价 0-否 1-是
-  insuranceAmount: 2  # 保险金额
+  isInsured: 0
+  insuranceAmount: 2
   isConfirm: 1
   consigneeCountryCode: GB
   consigneeCity: Ablis
-  thirdType: "1"  # 1-FBA订单 2-FBC订单 4-自提订单 5-直发订单
   consigneeEmail: test@163.com
   consigneeName: test
   consigneePostcode: UK11 1
@@ -19,105 +18,151 @@ order_template:
   saleTime: "2024-01-01"
   referenceNo: "ref_001"
 
-# 订单类型配置
+# 订单类型定义
 order_types:
-  standard:  # 标准订单 (不传thirdType)
-    description: "标准订单"
+  standard:
+    name: "标准订单"
+    description: "普通标准订单"
     thirdType: null  # 不传此字段
 
-  fba:  # FBA转仓订单
-    description: "FBA转仓订单"
+  fba:
+    name: "FBA转仓订单"
+    description: "FBA仓库转仓订单"
     thirdType: "1"
     # FBA特定配置
-    warehouseCode:
-      test: "FBA_SZTEST"
-      staging: "FBA_USSTAGE"
-      production: "FBA_SZPROD"
+    warehouse_suffix: "_FBA"
+    required_sku_prefix: "FBA_"
 
-  self_pickup:  # 自提订单
-    description: "自提订单"
-    thirdType: "4"
-    # 自提订单特定配置
-    logisticsServiceCode:
-      test: "SELF_PICKUP"
-      staging: "SELF_PICKUP"
-      production: "SELF_PICKUP"
+# 物流服务配置（决定是否支持自提）
+logistics_services:
+  JD-1DD:
+    name: "JD-1DD支持自提"
+    supports_self_pickup: true
+    supports_direct_ship: false
 
-  fbc:  # FBC订单
-    description: "FBC订单"
-    thirdType: "2"
+  JD-3DD:
+    name: "不支持自提"
+    supports_self_pickup: false
+    supports_direct_ship: true
 
-  direct_ship:  # 直发订单
-    description: "直发订单"
-    thirdType: "5"
-# 环境相关配置
+  UPS-NDD:
+    name: "UPS快递"
+    supports_self_pickup: false
+    supports_direct_ship: true
+
+  SELF_PICKUP:
+    name: "自提服务"
+    supports_self_pickup: true
+    supports_direct_ship: false
+    # 自提订单强制使用特定配置
+    force_thirdType: "4"
+    force_warehouse_suffix: "_PICKUP"
+    force_sku_prefix: "PICKUP_"
+
+# 环境配置
 environments:
-  test:  # 测试环境
-    warehouseCode: SZTEST
-    logisticsServiceCode: JD-1DD
-    sku_pool:  # 测试环境SKU
-      normal: ["TEST-0302-001", "Test-02-04098", "TEST-PICK-00002"]
-      sn: ["TEST_FRAGILE_001"]
-      bulk: ["TEST_BULK_001"]
+  test:
+    # 基础配置
+    base_warehouse: "SZTEST"
+    base_logistics: "JD-1DD"
 
-  production:  # 生产环境
-    warehouseCode: SZPROD
-    logisticsServiceCode: UPS-NDD
+    # 环境特定的值映射
+    warehouse_mapping:
+      SZTEST: "TEST_WH_SZ"
+      SZTEST_FBA: "TEST_FBA_WH"
+      SZTEST_PICKUP: "TEST_PICKUP_WH"
+
+    logistics_mapping:
+      JD-1DD: "TEST_JD"
+      FEDEX-2DD: "TEST_FEDEX"
+      UPS-NDD: "TEST_UPS"
+      SELF_PICKUP: "JD-1DD"
+
+    # SKU池（环境特定）
     sku_pool:
-      normal: ["PROD_SKU_001", "PROD_SKU_002", "PROD_SKU_003"]
-      fragile: ["SKU20250515001", "SKU20250516001"]
-      bulk: ["PROD_BULK_001"]
+      standard: ["TEST_SKU_001", "TEST_SKU_002", "TEST_SKU_003"]
+      fba: ["FBA_TEST_001", "FBA_TEST_002", "FBA_TEST_003"]
+      self_pickup: ["PICKUP_TEST_001", "PICKUP_TEST_002"]
+      fragile: ["FRAGILE_TEST_001", "FRAGILE_TEST_002"]
+      bulk: ["BULK_TEST_001", "BULK_TEST_002"]
+
+  staging:
+    base_warehouse: "USSTAGE"
+    base_logistics: "FEDEX-2DD"
+    warehouse_mapping:
+      USSTAGE: "STAGE_WH_US"
+      USSTAGE_FBA: "STAGE_FBA_WH"
+      USSTAGE_PICKUP: "STAGE_PICKUP_WH"
+    logistics_mapping:
+      FEDEX-2DD: "STAGE_FEDEX"
+      SELF_PICKUP: "STAGE_SELF_PICKUP"
+    sku_pool:
+      standard: ["STAGE_SKU_001", "STAGE_SKU_002"]
+      fba: ["FBA_STAGE_001"]
+      self_pickup: ["PICKUP_STAGE_001"]
+
+  production:
+    base_warehouse: "SZPROD"
+    base_logistics: "UPS-NDD"
+    warehouse_mapping:
+      SZPROD: "PROD_WH_SZ"
+      SZPROD_FBA: "PROD_FBA_WH"
+      SZPROD_PICKUP: "PROD_PICKUP_WH"
+    logistics_mapping:
+      UPS-NDD: "PROD_UPS"
+      SELF_PICKUP: "PROD_SELF_PICKUP"
+    sku_pool:
+      standard: ["PROD_SKU_001", "PROD_SKU_002", "PROD_SKU_003"]
+      fba: ["FBA_PROD_001", "FBA_PROD_002"]
+      self_pickup: ["PICKUP_PROD_001"]
 
 # 测试场景配置
 test_scenarios:
-  single_normal:  # 单普通商品
-    description: "单SKU正常订单测试"
-    sku_config:
-      category: normal
-      count: 1
-      quantity: 1
+  standard_order:
+    description: "标准订单测试"
+    order_type: standard
+    logistics: default  # 使用环境默认物流
+    warehouse: default  # 使用环境默认仓库
+    sku_category: standard
+    sku_count: 1
+    quantity: 1
 
-  multi_normal:  # 多普通商品
-    description: "多SKU正常订单测试"
-    sku_config:
-      category: normal
-      count: 3
-      quantity: 2
+  fba_order:
+    description: "FBA转仓订单测试"
+    order_type: fba
+    logistics: default
+    warehouse: default  # 会自动添加_FBA后缀
+    sku_category: fba
+    sku_count: 1
+    quantity: 1
 
-  single_sn:  # 单SN订单
-    description: "单SN订单测试"
-    sku_config:
-      category: sn
-      count: 1
-      quantity: 1
+  self_pickup_order:
+    description: "自提订单测试"
+    order_type: standard  # 基础类型，会被物流覆盖
+    logistics: SELF_PICKUP  # 强制使用自提物流
+    warehouse: default  # 会自动添加_PICKUP后缀
+    sku_category: self_pickup
+    sku_count: 1
+    quantity: 1
 
-  multi_sn: # 单SN订单
-    description: "多SN订单测试"
-    sku_config:
-      category: sn
-      count: 2
-      quantity: 2
-
-  bulk_order:  # 大批量订单
-    description: "大批量订单测试"
-    sku_config:
-      category: bulk
-      count: 1
-      quantity: 50
-
-  mixed_order:  # 混合订单
-    description: "混合商品类型订单测试"
-    items:
-      - category: normal
+  multi_sku_order:
+    description: "多SKU订单测试"
+    order_type: standard
+    logistics: default
+    warehouse: default
+    sku_mix:
+      - category: standard
         count: 2
         quantity: 1
-      - category: sn
+      - category: fragile
         count: 1
         quantity: 2
+    sku_count: 3
+    quantity: 1
 
-# 可选字段配置（根据需要启用）
+# 可选字段配置
 optional_fields:
-  labelUrl:  # 标签URL模板
+  labelUrl:
     test: "http://test-label.com/{order_no}.pdf"
     staging: "http://stage-label.com/{order_no}.pdf"
     production: "http://prod-label.com/{order_no}.pdf"

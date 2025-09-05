@@ -22,8 +22,8 @@ def test_query_inventory(api_oms_config):
 # @pytest.mark.skip("先不测普通订单了")
 @pytest.mark.parametrize("sku", [
     "TEST-IPING0020",
-    # "TEST-0302-001",
-    # "Test-02-04098",
+    "TEST-0302-001",
+    "Test-02-04098",
     # "NEW-BLACK-YK-LY-2001",
     # "TEST-PICK-00002",
     # "IT-TEST-202402501"
@@ -50,20 +50,22 @@ def test_create_common_order(api_oms_config, sku):
         # "labelUrl": "https://erp.sweetnight.com.cn/api/filecenter/download/withFileSuffix/1934866/faceUrl-0.pdf",
         # "labelUrl": "http://oa.tenflyer.net:1216/filedata/lms/label//temu/2025/07/04/SN250704017950.pdf",
         # "labelUrl": "http://oa.tenflyer.net:1216/filedata/lms/label//temu/2025/07/04/SN250704005811.pdf",
+        # "labelUrl":  "https://wms.newouda.com/statics/label/2025/09/01/a9b451ca-7390-4007-b7e2-d6bdba7def22.pdf",
         "warehouseCode": "SZTEST",
-        "logisticsServiceCode": "JD-3DD",
+        "logisticsServiceCode": "XOD",
         # "returnLogisticsFlag": 1,
         # "returnLogisticsServiceCode": "XOD",
         "orderNo": "1",
         "referenceNo": "1",
-        # "trackNumber": "1",
+        # "trackNumber": "",
         "details": [{"qty": 1, "sku": sku}]
+        # "details": [{"qty": 1, "sku": sku},{"qty": 1, "sku": "TEST-0302-001"}]
     }
     order_no = str(CustomSnowflake().next_id())
     order_data.update({
         "orderNo": order_no,
         "referenceNo": order_no,
-        "trackNumber": order_no
+        # "trackNumber": order_no
     })
     # order_data = load_order_template("EBAY")
     logging.info(order_data)
