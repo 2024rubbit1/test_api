@@ -1,0 +1,43 @@
+# 标准入库单（单箱单SKU）
+- case_name: 标准入库单-单箱单SKU
+  warehouse_code: "SZTEST"  # 仓库编码
+  box_specification: "40HQ"  # 箱规格
+  transport_mode_code: 2  # 运输方式编码
+  warehouse_entry_box_data:  # 箱数据（支持多箱多SKU）
+    - box_no: 1
+      detail_table_data:
+        - qty: 10  # 入库数量
+          sku: "TEST-IPING0021"  # 商品编码
+          manufacture_batch: "1001"  # 生产批次
+      height: 0
+      length: 0
+      weight: 0
+      width: 0
+
+# 多箱多SKU入库单（扩展场景）
+- case_name: 多箱多SKU入库单
+  warehouse_code: "SHTEST"  # 上海仓库
+  box_specification: "20GP"
+  transport_mode_code: 1
+  warehouse_entry_box_data:
+    - box_no: 1
+      detail_table_data:
+        - qty: 5
+          sku: "TEST-SKU-001"
+          manufacture_batch: "202401"
+        - qty: 3
+          sku: "TEST-SKU-002"
+          manufacture_batch: "202401"
+      height: 10
+      length: 20
+      weight: 5
+      width: 15
+    - box_no: 2
+      detail_table_data:
+        - qty: 2
+          sku: "TEST-SKU-003"
+          manufacture_batch: "202402"
+      height: 8
+      length: 15
+      weight: 3
+      width: 10

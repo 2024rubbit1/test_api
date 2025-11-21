@@ -1,0 +1,19 @@
+# 标准尺寸SKU（基础场景）
+- case_name: 标准尺寸SKU
+  sku_code: "SKU-{{timestamp}}-001"  # {{timestamp}}为占位符 动态编码SKU
+  product_name: "SKU-{{timestamp}}-001-name"  # {{timestamp}}为占位符 动态编码商品名称
+  height: 10
+  length: 10
+  width: 10
+  weight: 10.5
+  sn_flag: 0
+
+# 超大尺寸SKU（特殊场景）
+- case_name: 超大尺寸SKU
+  sku_code: "SKU-{{timestamp}}-002"  # {{timestamp}}为占位符 动态编码SKU
+  product_name: "SKU-{{timestamp}}-002-name"  # {{timestamp}}为占位符 动态编码商品名称
+  height: 200
+  length: 150
+  width: 100
+  weight: 50.0
+  sn_flag: 1

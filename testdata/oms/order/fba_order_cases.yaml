@@ -1,0 +1,34 @@
+# testdata/fba_order_cases.yaml
+- case_name: FBA订单-京东物流
+  sku: "Test-02-04098"
+  logistics_code: "JD-1DD"
+  thirdType: "1"
+  consignee:
+    consigneeCountryCode: "GB"
+    consigneeCity: "Royston"
+    consigneePostcode: "UK1 1"
+    consigneeName: "test"
+    consigneeEmail: "test@163.com"
+    consigneeTel: 33649383330
+    consigneeStreetOne: "宝安大道"
+
+
+  shipper:
+    city: "Birmingham"
+    country_code: "GB"
+    postcode: "UK1 1"
+    email: "InboundUK.fulfillment@orangeconnex.com"
+    name: "Orange Connex Fulfilment Centre-UK05"
+    state: "England"
+    streetOne: "Unit 6 Nexus Point, Elliot Way"
+    streetTwo: ""
+    tel: "01212744296"
+    timezone: 0
+  parcel:
+    height: 13.0
+    length: 195.0
+    weight: 15174.0
+    width: 20.0
+  insured:
+    is_insured: 0 # 是否需要 insured 0-不需要 1-需要
+    insurance_amount: 0 #  投保金额
